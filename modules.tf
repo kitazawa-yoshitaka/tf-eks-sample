@@ -15,3 +15,27 @@ module "vpc" {
     Terraform = "true"
   }
 }
+
+module "eks-sample-cluster" {
+  source          = "terraform-aws-modules/eks/aws"
+  version         = "17.1.0"
+  cluster_name    = "eks-sample-cluster"
+  cluster_version = "1.17"
+  subnets         = module.vpc.private_subnets
+  vpc_id          = module.vpc.vpc_id
+
+  worker_groups = [
+    {
+      instance_type = "m4.large"
+      asg_max_size  = 5
+    }
+  ]
+}
+
+data "aws_eks_cluster" "cluster" {
+  name = module.eks-sample-cluster.cluster_id
+}
+
+data "aws_eks_cluster_auth" "cluster" {
+  name = module.eks-sample-cluster.cluster_id
+}
